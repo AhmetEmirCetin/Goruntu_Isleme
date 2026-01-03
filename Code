@@ -1,0 +1,72 @@
+using System;
+using System.Drawing; // Bu kütüphane şart! (NuGet'ten indirmen gerekebilir)
+using System.IO;
+
+namespace GoruntuIslemeProjesi
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.Title = "Image Processing: Grayscale Matrix";
+            Console.WriteLine("==========================================");
+            Console.WriteLine("   RESİM İŞLEME VE MATRİS ANALİZİ");
+            Console.WriteLine("==========================================");
+
+            Console.WriteLine("İşlenecek resmin yolunu yaz (Örn: C:\\resim.jpg):");
+            Console.Write(">> ");
+            string dosyaYolu = Console.ReadLine().Trim('"');
+
+            if (!File.Exists(dosyaYolu))
+            {
+                Console.WriteLine("Hata: Dosya bulunamadı!");
+                return;
+            }
+
+            try
+            {
+                Console.WriteLine("Görüntü matrise çevriliyor ve işleniyor...");
+                
+                // 1. Resmi Belleğe Al (Bitmap bir piksel matrisidir)
+                Bitmap resim = new Bitmap(dosyaYolu);
+                
+                // 2. Piksel Piksel Gez (Nested Loops - O(N*M))
+                for (int x = 0; x < resim.Width; x++)
+                {
+                    for (int y = 0; y < resim.Height; y++)
+                    {
+                        // Mevcut pikselin rengini al
+                        Color orjinalRenk = resim.GetPixel(x, y);
+
+                        // 3. MATEMATİKSEL İŞLEM (ML/Image Math Kısmı)
+                        // İnsan gözü yeşili daha çok görür, maviyi az görür.
+                        // Formül: (R * 0.3) + (G * 0.59) + (B * 0.11)
+                        int griDeger = (int)((orjinalRenk.R * 0.3) + (orjinalRenk.G * 0.59) + (orjinalRenk.B * 0.11));
+
+                        // Yeni rengi oluştur (R, G ve B eşit olunca gri olur)
+                        Color griRenk = Color.FromArgb(griDeger, griDeger, griDeger);
+
+                        // Yeni rengi piksele işle
+                        resim.SetPixel(x, y, griRenk);
+                    }
+                }
+
+                // 4. Sonucu Kaydet
+                string yeniYol = "gri_yapilmis_resim.jpg";
+                resim.Save(yeniYol);
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"\n✅ İŞLEM TAMAMLANDI!");
+                Console.WriteLine($"Matematiksel filtre uygulandı ve şuraya kaydedildi: {Path.GetFullPath(yeniYol)}");
+                Console.ResetColor();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Bir hata oluştu: " + ex.Message);
+            }
+
+            Console.WriteLine("Çıkmak için bir tuşa bas...");
+            Console.ReadKey();
+        }
+    }
+}
